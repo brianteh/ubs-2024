@@ -1,5 +1,6 @@
 import json
 from flask import Flask, jsonify, request
+from collections import defaultdict, deque
 app = Flask(__name__)
 app.debug = True
 class PrefixMiddleware(object):
@@ -52,7 +53,52 @@ def solve_ctf_crack_me():
 @app.route('/payload_stack', methods=['GET'])
 def solve_ctf_stack():
    return 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\xfa\x11\x40\x00\n'
+@app.route('/bugfixer/p1', methods=['POST'])
+def bug_fixer():
+   # Get the input JSON
+   data = request.json
+   times = data[0]['time']
+   prerequisites = data[0]['prerequisites']
 
+   n = len(times)  # Number of projects
+
+   # Step 1: Build the graph and initialize data structures
+   graph = defaultdict(list)
+   in_degree = [0] * n
+   min_hours = [0] * n
+
+   # Create the graph and in-degree count
+   for a, b in prerequisites:
+      graph[a-1].append(b-1)  # Convert to 0-based index
+      in_degree[b-1] += 1
+
+   # Step 2: Initialize the min_hours with the project times
+   for i in range(n):
+      min_hours[i] = times[i]
+
+   # Step 3: Topological sort using Kahn's Algorithm
+   queue = deque()
+   
+   # Start with projects that have no prerequisites
+   for i in range(n):
+      if in_degree[i] == 0:
+         queue.append(i)
+
+   while queue:
+      current = queue.popleft()
+
+      for neighbor in graph[current]:
+         # Update the minimum hours for the neighbor
+         min_hours[neighbor] = max(min_hours[neighbor], min_hours[current] + times[neighbor])
+         in_degree[neighbor] -= 1
+         
+         if in_degree[neighbor] == 0:
+               queue.append(neighbor)
+
+   # The answer is the maximum of the min_hours
+   result = max(min_hours)
+
+   return jsonify([result])
     
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)

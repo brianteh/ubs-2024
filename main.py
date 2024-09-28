@@ -524,7 +524,7 @@ def efficient_hunter_kazuma(data):
    result = []
    for item in data:
       monsters = item["monsters"]
-      efficiency = calculate_efficiency_v4(monsters)
+      efficiency = calculate_efficiency_v3(monsters)
       result.append({"efficiency": efficiency})
    
    return result

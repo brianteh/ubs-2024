@@ -20,7 +20,15 @@ class PrefixMiddleware(object):
 #app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/') to fix nginx proxy pass problems
 #GET example
 @app.route('/hello', methods=['GET'])
-def get_employees():
- return jsonify(["Hello"])
+def get_example():
+   return jsonify(["GET good"])
+
+
+#POST EXAMPLE
+@app.route('/pello', methods=['POST'])
+def post_example():
+   return jsonify(["POST good"])
+
+
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)

@@ -62,6 +62,7 @@ def solve_bug_fixer():
    json_string = request.data.decode('utf-8') 
    json_string = json_string.replace('(', '[').replace(')', ']')
    data=json.loads(json_string)
+   ans_arr=[]
    for k in range(len(data)):
    
       times = data[k]['time']
@@ -104,8 +105,8 @@ def solve_bug_fixer():
 
       # The answer is the maximum of the min_hours
       result = max(min_hours)
-
-      return jsonify([result])
+      ans_arr.append(result)
+   return jsonify(ans_arr)
       
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)

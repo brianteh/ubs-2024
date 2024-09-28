@@ -162,95 +162,111 @@ def solve_decode():
 
 
 # Klotski
-# Directions mapping for compass notation
+def generate_2d(board_string):
+   arr = []
+   i=0
+   while i<len(board_string):
+      arr.append(list(board_string[i:i+4]))
+      i+=4
+   return arr
+
+def moving(moves_string):
+
+   global g_arr
+   moves_string = list(moves_string)
+   
+   for i in range(0,len(moves_string),2):
+      move(get_position_arr(g_arr,moves_string[i]),moves_string[i+1])
 
 
-# Helper function to convert board string to 2D array
-def board_to_grid(board):
-    return [list(board[i:i+4]) for i in range(0, 20, 4)]
+def get_position_arr(arr_2d,target):
 
-# Helper function to convert 2D array back to board string
-def grid_to_board(grid):
-    return ''.join(''.join(row) for row in grid)
+    arr=[]
+    for i in range(len(arr_2d)):
+        for j in range(len(arr_2d[i])):
+            if(target == arr_2d[i][j]):
+                pos = [i,j]
+                arr.append(pos)
+    return arr
 
-# Helper function to find the positions of all blocks
-def find_block_positions(grid):
-    positions = {}
-    for r in range(5):
-        for c in range(4):
-            block = grid[r][c]
-            if block != '@':
-                if block not in positions:
-                    positions[block] = []
-                positions[block].append((r, c))
-    return positions
+def move(pos_arr,dir):
+   global g_arr
+   visited_pos =[False]*len(pos_arr)
+   temp_pos_arr = pos_arr
+   
 
-# Apply a move to the board
-def apply_move(grid, block, direction):
-   positions = find_block_positions(grid)
-   block_positions = positions[block]
-   direction_map = {
-   'N': (-1, 0),  # Move North (up)
-   'S': (1, 0),   # Move South (down)
-   'W': (0, -1),  # Move West (left)
-   'E': (0, 1)    # Move East (right)
-   }
-   # Determine the move direction
-   move_r, move_c = direction_map[direction]
+   while (False in visited_pos):
+      for j in range(len(visited_pos)):
+         if(visited_pos[j]==True):
+               continue
+         if not(temp_pos_arr[j][1] == len(g_arr[j])-1):
+               if(g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]+1]=="@" and dir=="E"):
+                  temp = g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]]
+                  g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]] = "@"
+                  g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]+1]=temp
+               
+                  visited_pos[j]=True
+                  continue
+         if not(temp_pos_arr[j][0]==0):
+               if(g_arr[temp_pos_arr[j][0]-1][temp_pos_arr[j][1]]=="@" and dir=="N"):
+                  temp = g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]]
+                  g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]] = "@"
+                  g_arr[temp_pos_arr[j][0]-1][temp_pos_arr[j][1]]=temp
+                  
+                  visited_pos[j]=True
+                  continue
+         if not(temp_pos_arr[j][1] == 0 ):
+               if(g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]-1]=="@" and dir=="W"):
+                  temp = g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]]
+                  g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]] = "@"
+                  g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]-1]=temp
+                  
+                  visited_pos[j]=True
+                  continue
+         if not(temp_pos_arr[j][0] == len(g_arr)-1):
+               if(g_arr[temp_pos_arr[j][0]+1][temp_pos_arr[j][1]]=="@" and dir=="S"):
+                  temp = g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]]
+                  g_arr[temp_pos_arr[j][0]][temp_pos_arr[j][1]] = "@"
+                  g_arr[temp_pos_arr[j][0]+1][temp_pos_arr[j][1]]=temp
+               
+                  visited_pos[j]=True
+                  continue
 
-   # Check if all positions can move in the specified direction
-   new_positions = []
-   for r, c in block_positions:
-      new_r, new_c = r + move_r, c + move_c
-      # Check if the new position is within bounds and empty
-      if not (0 <= new_r < 5 and 0 <= new_c < 4) or grid[new_r][new_c] != '@':
-         return  # Invalid move, should not happen in valid input
 
-      new_positions.append((new_r, new_c))
 
-   # Move the block to the new positions
-   for r, c in block_positions:
-      grid[r][c] = '@'  # Empty the old positions
 
-   for new_r, new_c in new_positions:
-      grid[new_r][new_c] = block  # Fill the new positions
 
-# Function to process a single board and moves
-def process_board(board, moves):
-    grid = board_to_grid(board)
+g_arr=None
 
-    # Process each move
-    for i in range(0, len(moves), 2):
-        block = moves[i]
-        direction = moves[i + 1]
-        apply_move(grid, block, direction)
-
-    return grid_to_board(grid)
 @app.route('/klotski', methods=['POST'])
 def klotski():
+   global g_arr
    data = json.loads(request.data)
-   result_boards = []
+   print(data)
+   ans=[]
+   for d in range(len(data)):
+      g_arr = generate_2d(data[d]["board"])
+      moving(data[d]["moves"])
+      ans_string=""
+      for h in range(len(g_arr)):
+         for k in range(len(g_arr[h])):
+               ans_string+=g_arr[h][k]
+      ans.append(ans_string)
 
-   for entry in data:
-      board = entry['board']
-      moves = entry['moves']
-      result_board = process_board(board, moves)
-      result_boards.append(result_board)
-
-   return jsonify(result_boards)
+   return jsonify(ans)
 
 #Clumsy Programmer
 # Function to check if two words differ by exactly one character
 def is_one_letter_different(word1, word2):
-    if len(word1) != len(word2):
-        return False
-    difference_count = 0
-    for i in range(len(word1)):
-        if word1[i] != word2[i]:
-            difference_count += 1
-        if difference_count > 1:
-            return False
-    return difference_count == 1
+   if len(word1) != len(word2):
+      return False
+   difference_count = 0
+   for i in range(len(word1)):
+      if word1[i] != word2[i]:
+         difference_count += 1
+      if difference_count > 1:
+         return False
+   return difference_count == 1
 
 # Function to correct mistyped words using the provided dictionary
 def correct_mistypes(data):
@@ -281,4 +297,4 @@ def solve_clumsy():
    return jsonify(corrected_data)
 
 if __name__ == '__main__':
-    app.run('0.0.0.0',port=5000)
+   app.run('0.0.0.0',port=5000)

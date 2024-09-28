@@ -44,9 +44,6 @@ def solve_wordle():
 
    return request.data
 
-@app.route('/efficient-hunter-kazuma', methods=['POST'])
-def solve_kazuma():
-   return {}
 
 # ctf
 @app.route('/payload_crackme', methods=['GET'])
@@ -295,6 +292,77 @@ def solve_clumsy():
    corrected_data = correct_mistypes(data)  
    # Get corrections for mistyped words
    return jsonify(corrected_data)
+# Kazuma
+def calculate_efficiency(monsters):
+   total_efficiency = 0  # Start with zero efficiency
+   n = len(monsters)
+   i = 0  # Current wave index
+   is_charged = 0  # 0 means not charged, 1 means charged
+   last_action = None  # To track if the last action was a charge or attack
+   attack_wave = 0
+   
 
+   while i < n:
+      # Kazuma needs to charge first
+      if is_charged == 0:
+         total_efficiency -= monsters[i]  # Charging penalty
+         is_charged = 1  # Kazuma is now charged
+         last_action = "charge"
+
+      # Move to the next wave for comparison and potential attack
+      
+      i += 1
+      if i >= n:
+         if is_charged == 1 and total_efficiency > 0:
+               total_efficiency += monsters[attack_wave]
+         break  # If no more waves, stop
+
+      # Determine how many subsequent values to compare based on total monster count
+      if len(monsters) <= 5:
+         # Compare with only the next wave
+         attack_wave = i  # Assume we will attack the current wave
+
+      else:
+         # Compare with two subsequent values if there are 5 or more monsters
+         attack_wave = i  # Assume we will attack the current wave
+         if i + 1 < n:
+               if monsters[i] < monsters[i + 1]:
+                  attack_wave = i + 1
+               if i + 2 < n and monsters[attack_wave] < monsters[i + 2]:
+                  attack_wave = i + 2
+
+      # Attack the highest value wave if charged
+      if is_charged == 1:
+         total_efficiency += monsters[attack_wave]  # Gain efficiency from attacking
+         last_action = "attack"
+         is_charged = 0  # Reset charge after attack
+
+      # Skip one wave after attack (cooldown), but keep it for future comparison
+      i = attack_wave + 2
+
+      if i < n and is_charged == 0:
+         # After skipping, Kazuma must charge again at the next wave, but no consecutive charges
+         if last_action != "charge":  # Avoid consecutive charges
+               total_efficiency -= monsters[i]  # Charging penalty
+               is_charged = 1  # Kazuma is now charged
+               last_action = "charge"
+         i += 1  # Move to the next wave
+
+   return max(total_efficiency, 0)  # Return total efficiency, ensure it's non-negative
+
+def efficient_hunter_kazuma(data):
+   result = []
+   for item in data:
+      monsters = item["monsters"]
+      efficiency = calculate_efficiency(monsters)
+      result.append({"efficiency": efficiency})
+   
+   return result
+
+@app.route('/efficient-hunter-kazuma',methods=['POST'])
+def solve_kazuma():
+   data = json.loads(request.data)
+   return efficient_hunter_kazuma(data)
+    
 if __name__ == '__main__':
    app.run('0.0.0.0',port=5000)

@@ -30,5 +30,25 @@ def post_example():
    return jsonify(["POST good"])
 
 
+#Solve the Wordle
+@app.route('/wordle-game', methods=['POST'])
+def solve_wordle():
+   default_ans={"guess":"slate"}
+   data = json.loads(request.data)
+   if(len(data["guessHistory"])==0):
+      return jsonify(default_ans)
+   
+
+   return request.data
+
+@app.route('/efficient-hunter-kazuma', methods=['POST'])
+def solve_kazuma():
+   return {}
+
+# ctf
+@app.route('/payload_crackme', methods=['GET'])
+def solve_ctf():
+   return "111-1111111" 
+    
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)

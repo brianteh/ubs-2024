@@ -1,4 +1,5 @@
 import json
+import os
 from flask import Flask, jsonify, request
 from collections import defaultdict, deque
 app = Flask(__name__)
@@ -106,6 +107,14 @@ def solve_bug_fixer():
       result = max(min_hours)
       ans_arr.append(result)
    return jsonify(ans_arr)
-      
+# decode and conquer
+@app.route('/ub5-flags', methods=['GET'])
+def solve_decode():
+   data={
+   "sanityScroll": {
+      "flag": os.environ.get('FLAG')
+   }
+   }
+   return jsonify(data)
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)

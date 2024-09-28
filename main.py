@@ -17,7 +17,7 @@ class PrefixMiddleware(object):
         else:
             start_response('404', [('Content-Type', 'text/plain')])
             return ["This url does not belong to the app.".encode()]
-app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/py')
+#app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/') to fix nginx proxy pass problems
 #GET example
 @app.route('/hello', methods=['GET'])
 def get_employees():

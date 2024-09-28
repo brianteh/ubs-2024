@@ -107,6 +107,33 @@ def solve_bug_fixer():
       result = max(min_hours)
       ans_arr.append(result)
    return jsonify(ans_arr)
+
+def max_bugsfixed(bug_infos):
+   arr=[]
+   for i in range(len(bug_infos)):
+      bug_seq = bug_infos[i]['bugseq']
+      
+      # Sort bugs by their limit
+      bug_seq.sort(key=lambda x: x[1])  # Sort by limit
+      
+      total_time = 0
+      completed_bugs = 0
+      
+      for difficulty, limit in bug_seq:
+         total_time += difficulty
+         if total_time <= limit:
+               completed_bugs += 1
+         else:
+               break  # No need to check further as they are sorted by limit
+
+      arr.append(completed_bugs)
+   return arr
+
+@app.route('/bugfixer/p2', methods=['POST'])
+def bugfixer():
+   data = json.loads(request.data)
+   result = max_bugsfixed(data)
+   return jsonify(result)
 # decode and conquer
 @app.route('/ub5-flags', methods=['GET'])
 def solve_decode():

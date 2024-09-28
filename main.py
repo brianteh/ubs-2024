@@ -1,4 +1,5 @@
 import json
+import re
 import os
 from flask import Flask, jsonify, request
 from collections import defaultdict, deque
@@ -272,9 +273,9 @@ def correct_mistypes(data):
    return corrections
 @app.route('/the-clumsy-programmer',methods=['POST'])
 def solve_clumsy():
-   print(1)
-   json_string = request.data.decode('utf-8') 
-   data = json.loads(json_string) 
+   json_string = request.data.decode('utf-8')
+   corrected_json_string = re.sub(r',(\s*[\]}])', r'\1', json_string) 
+   data = json.loads(corrected_json_string)
    corrected_data = correct_mistypes(data)  
    # Get corrections for mistyped words
    return jsonify(corrected_data)

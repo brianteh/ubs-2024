@@ -349,12 +349,86 @@ def calculate_efficiency(monsters):
          i += 1  # Move to the next wave
 
    return max(total_efficiency, 0)  # Return total efficiency, ensure it's non-negative
+def find_peak_monsters(monsters, left, right):
+    
+   while left <= right:
+      mid = (left + right) // 2
+      
+      # If monsters at mid is greater than next, it's a peak
+      if mid + 1 < len(monsters) and monsters[mid] > monsters[mid + 1]:
+         return mid
+      # If not, move to the right half if monsters[mid+1] > monsters[mid]
+      elif mid + 1 < len(monsters) and monsters[mid + 1] > monsters[mid]:
+         left = mid + 1
+      else:
+         # Otherwise move left
+         right = mid - 1
+   return -1  # Return -1 if no peak found
+
+def calculate_efficiency_v2(monsters):
+   n = len(monsters)
+   efficiency = 0
+   i = 0
+   while i < n:
+      peak_index = find_peak_monsters(monsters, i, n-1)
+      
+      if peak_index == -1:
+         break
+      
+      # Calculate efficiency of attacking at the peak
+      if peak_index + 1 < n:
+         earned_gold = monsters[peak_index] - monsters[peak_index + 1]
+         efficiency += earned_gold
+         
+         # Move to rear at t+1 (skip the next time step)
+         i = peak_index + 2
+      else:
+         # No more efficient attacks, break out
+         break
+    
+   return efficiency
+def calculate_efficiency_v3(arr):
+   min_pointer = 0
+   max_pointer = 0
+   ans=0
+   flag=True
+   while flag:
+      #if next number is smaller --> move to rear
+      if not(min_pointer==len(arr)-1):
+         if(arr[min_pointer]>=arr[min_pointer+1]):
+               min_pointer+=1
+               max_pointer=min_pointer
+               continue
+      else:
+         break
+      if not(max_pointer==len(arr)-1):
+         if(arr[max_pointer]<=arr[max_pointer+1]):
+               
+                  max_pointer+=1
+                  continue
+               
+
+         if(arr[max_pointer]>arr[max_pointer+1]):
+               ans+= (-1*arr[min_pointer])+arr[max_pointer]
+               max_pointer+=1
+               min_pointer=max_pointer
+               continue
+      else:
+         ans+= (-1*arr[min_pointer])+arr[max_pointer]
+         break
+            
+   return ans
+    
+    
+    
+
+
 
 def efficient_hunter_kazuma(data):
    result = []
    for item in data:
       monsters = item["monsters"]
-      efficiency = calculate_efficiency(monsters)
+      efficiency = calculate_efficiency_v3(monsters)
       result.append({"efficiency": efficiency})
    
    return result
@@ -363,6 +437,15 @@ def efficient_hunter_kazuma(data):
 def solve_kazuma():
    data = json.loads(request.data)
    return efficient_hunter_kazuma(data)
-    
+
+#Digital colony
+
+@app.route('/digital-colony',methods=['POST'])
+def solve_digital_colony():
+   data=json.loads(request.data)
+   ans=[]
+   for d in data:
+      ans.append(str(simulate_colony_growth(d['colony'], d['generations'])))
+   return jsonify(ans)
 if __name__ == '__main__':
    app.run('0.0.0.0',port=5000)

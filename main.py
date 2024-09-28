@@ -284,14 +284,54 @@ def correct_mistypes(data):
       corrections.append({"corrections": corrected_words})
    
    return corrections
+def xor_strings(str1, str2):
+   # Ensure both strings are the same length
+   if len(str1) != len(str2):
+      raise ValueError("Strings must have the same length.")
+   
+   # Convert strings to bytes
+   str1_bytes = str1.encode('utf-8')
+   str2_bytes = str2.encode('utf-8')
+   
+   # Perform bitwise XOR between the two byte strings
+   xor_result = bytes([b1 ^ b2 for b1, b2 in zip(str1_bytes, str2_bytes)])
+   
+   # Convert the XOR result to a string (or keep as bytes if needed)
+   return xor_result
+def zero_one(x):
+   if(x>0):
+      return 1
+   else:
+      return 0
 @app.route('/the-clumsy-programmer',methods=['POST'])
 def solve_clumsy():
-   json_string = request.data.decode('utf-8')
-   corrected_json_string = re.sub(r',(\s*[\]}])', r'\1', json_string) 
-   data = json.loads(corrected_json_string)
-   corrected_data = correct_mistypes(data)  
+   #json_string = request.data.decode('utf-8')
+   #corrected_json_string = re.sub(r',(\s*[\]}])', r'\1', json_string) 
+   #data = json.loads(corrected_json_string)
+   #corrected_data = correct_mistypes(data)  
    # Get corrections for mistyped words
-   return jsonify(corrected_data)
+   data = json.loads(request.data)
+   ans=[]
+   for entry in data:
+      arr=[]
+      dictionary =  entry["dictionary"]
+      mistypes = entry["mistypes"]
+      visited_mistyped=[False]*len(mistypes)
+      i=0
+      while (False in visited_mistyped):
+         
+         for k in range(len(dictionary)):
+            result = list(map(zero_one,list(xor_strings(mistypes[i], dictionary[k]))))
+            if(sum(result)==1):
+               arr.append(dictionary[k])
+               dictionary.pop(k)
+               visited_mistyped[i]=True
+               i+=1
+               break
+        
+               
+      ans.append({"corrections":arr})
+   return jsonify(ans)
 # Kazuma
 def calculate_efficiency(monsters):
    total_efficiency = 0  # Start with zero efficiency

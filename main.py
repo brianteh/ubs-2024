@@ -158,5 +158,126 @@ def solve_decode():
    }
       }
    return jsonify(data)
+
+
+# Klotski
+# Directions mapping for compass notation
+
+
+# Helper function to convert board string to 2D array
+def board_to_grid(board):
+    return [list(board[i:i+4]) for i in range(0, 20, 4)]
+
+# Helper function to convert 2D array back to board string
+def grid_to_board(grid):
+    return ''.join(''.join(row) for row in grid)
+
+# Helper function to find the positions of all blocks
+def find_block_positions(grid):
+    positions = {}
+    for r in range(5):
+        for c in range(4):
+            block = grid[r][c]
+            if block != '@':
+                if block not in positions:
+                    positions[block] = []
+                positions[block].append((r, c))
+    return positions
+
+# Apply a move to the board
+def apply_move(grid, block, direction):
+   positions = find_block_positions(grid)
+   block_positions = positions[block]
+   direction_map = {
+   'N': (-1, 0),  # Move North (up)
+   'S': (1, 0),   # Move South (down)
+   'W': (0, -1),  # Move West (left)
+   'E': (0, 1)    # Move East (right)
+   }
+   # Determine the move direction
+   move_r, move_c = direction_map[direction]
+
+   # Check if all positions can move in the specified direction
+   new_positions = []
+   for r, c in block_positions:
+      new_r, new_c = r + move_r, c + move_c
+      # Check if the new position is within bounds and empty
+      if not (0 <= new_r < 5 and 0 <= new_c < 4) or grid[new_r][new_c] != '@':
+         return  # Invalid move, should not happen in valid input
+
+      new_positions.append((new_r, new_c))
+
+   # Move the block to the new positions
+   for r, c in block_positions:
+      grid[r][c] = '@'  # Empty the old positions
+
+   for new_r, new_c in new_positions:
+      grid[new_r][new_c] = block  # Fill the new positions
+
+# Function to process a single board and moves
+def process_board(board, moves):
+    grid = board_to_grid(board)
+
+    # Process each move
+    for i in range(0, len(moves), 2):
+        block = moves[i]
+        direction = moves[i + 1]
+        apply_move(grid, block, direction)
+
+    return grid_to_board(grid)
+@app.route('/klotski', methods=['POST'])
+def klotski():
+   data = json.loads(request.data)
+   result_boards = []
+
+   for entry in data:
+      board = entry['board']
+      moves = entry['moves']
+      result_board = process_board(board, moves)
+      result_boards.append(result_board)
+
+   return jsonify(result_boards)
+
+#Clumsy Programmer
+# Function to check if two words differ by exactly one character
+def is_one_letter_different(word1, word2):
+    if len(word1) != len(word2):
+        return False
+    difference_count = 0
+    for i in range(len(word1)):
+        if word1[i] != word2[i]:
+            difference_count += 1
+        if difference_count > 1:
+            return False
+    return difference_count == 1
+
+# Function to correct mistyped words using the provided dictionary
+def correct_mistypes(data):
+   corrections = []
+   for entry in data:
+      dictionary = entry["dictionary"]
+      mistypes = entry["mistypes"]
+      corrected_words = []
+      
+      # Iterate over each mistyped word
+      for mistyped_word in mistypes:
+         # Find the correct word in the dictionary
+         for correct_word in dictionary:
+               if is_one_letter_different(mistyped_word, correct_word):
+                  corrected_words.append(correct_word)
+                  break
+      
+      corrections.append({"corrections": corrected_words})
+   
+   return corrections
+@app.route('/the-clumsy-programmer',methods=['POST'])
+def solve_clumsy():
+   print(1)
+   json_string = request.data.decode('utf-8') 
+   data = json.loads(json_string) 
+   corrected_data = correct_mistypes(data)  
+   # Get corrections for mistyped words
+   return jsonify(corrected_data)
+
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)

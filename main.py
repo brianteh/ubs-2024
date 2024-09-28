@@ -140,8 +140,23 @@ def solve_decode():
    data={
    "sanityScroll": {
       "flag": os.environ.get('FLAG')
+   },
+   "openAiExploration": {
+      "flag": "FLAG_CONTENT_HERE"
+   },
+   "dictionaryAttack": {
+      "flag": "UB5{FLAG_CONTENT_HERE}",
+      "password": "PASSWORD_HERE"
+   },
+   "pictureSteganography": {
+      "flagOne": "UB5-1{FLAG_ONE_CONTENTS_HERE}",
+      "flagTwo": "UB5-2{FLAG_TWO_CONTENTS_HERE}"
+   },
+   "reverseEngineeringTheDeal": {
+      "flag": "FLAG_CONTENT_HERE",
+      "key": "KEY_HERE"
    }
-   }
+      }
    return jsonify(data)
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)

